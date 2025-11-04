@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Caza-EPP | CREAMOSS S.O S.A.S</title>
+<style>
+  body {
+    margin: 0;
+    overflow: hidden;
+    background: linear-gradient(#87ceeb, #ffffff);
+    font-family: "Poppins", sans-serif;
+  }
+
+  #scoreBoard {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 22px;
+    background: rgba(255,255,255,0.7);
+    padding: 10px 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  }
+
+  #gameOver {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255,255,255,0.95);
+    text-align: center;
+    padding: 30px;
+    border-radius: 15px;
+    display: none;
+    box-shadow: 0 0 15px rgba(0,0,0,0.3);
+  }
+
+  #credits {
+    position: absolute;
+    bottom: 8px;
+    right: 12px;
+    font-size: 14px;
+    background: rgba(255,255,255,0.5);
+    padding: 4px 8px;
+    border-radius: 6px;
+  }
+
+  canvas {
+    display: block;
+  }
+</style>
+</head>
+<body>
+<div id="scoreBoard">
+  🧢 Puntos: <span id="score">0</span> | ⏱️ <span id="time">60</span>s
+</div>
+
+<div id="gameOver">
+  <h2>🎉 ¡Fin del juego!</h2>
+  <p>Puntaje final: <span id="finalScore">0</span></p>
+  <p>Récord: <span id="bestScore">0</span></p>
+  <button onclick="restartGame()">Reiniciar</button>
+</div>
+
+<div id="credits">
+  © 2025 CREAMOSS S.O S.A.S.
+</div>
+
+<canvas id="gameCanvas"></canvas>
+
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let score = 0;
+let timeLeft = 60;
+let items = [];
+let gameInterval;
+let timerInterval;
+let gameOver = false;
+let level = 1;
+let speedMultiplier = 1;
+
+// 🎵 Audio Context
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playBeep(freq, duration, type="square") {
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = type;
+  osc.frequency.value = freq;
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration / 1000);
+  osc.start();
+  osc.stop(audioCtx.currentTime + duration / 1000);
+}
+
+function sonidoAcierto() { playBeep(700,150,"triangle"); }
+function sonidoError() { playBeep(150,250,"sawtooth"); }
+
+// 🎶 Música de fondo
+const music = new Audio("https://cdn.pixabay.com/audio/2023/02/28/audio_7dfec31754.mp3");
+music.loop = true;
+music.volume = 0.3;
+
+// Objetos
+const eppImages = ["🪖","🧤","👓","🥾"];
+const fakeItem = "❌";
+
+function createItem() {
+  const isFake = Math.random() < 0.2;
+  const emoji = isFake ? fakeItem : eppImages[Math.floor(Math.random() * eppImages.length)];
+  const x = Math.random() * (canvas.width - 40);
+  const speed = (2 + Math.random() * 3) * speedMultiplier;
+  items.push({emoji,x,y:-40,speed,isFake});
+}
+
+function drawItems() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  items.forEach((item,i)=>{
+    ctx.font="40px Arial";
+    ctx.fillText(item.emoji,item.x,item.y);
+    item.y += item.speed;
+    if(item.y>canvas.height+40) items.splice(i,1);
+  });
+}
+
+function clickEffect(x,y,color){
+  ctx.beginPath();
+  ctx.arc(x,y,20,0,2*Math.PI);
+  ctx.fillStyle=color;
+  ctx.globalAlpha=0.5;
+  ctx.fill();
+  ctx.globalAlpha=1.0;
+}
+
+canvas.addEventListener("click",(e)=>{
+  if(gameOver) return;
+  if(audioCtx.state==="suspended") audioCtx.resume();
+  if(music.paused) music.play();
+
+  const clickX=e.clientX, clickY=e.clientY;
+  let hit=false;
+
+  items.forEach((item,i)=>{
+    if(clickX>item.x && clickX<item.x+40 && clickY>item.y-40 && clickY<item.y){
+      hit=true;
+      if(item.isFake){
+        score-=5; sonidoError(); clickEffect(clickX,clickY,"red");
+      } else {
+        score+=10; sonidoAcierto(); clickEffect(clickX,clickY,"lime");
+      }
+      items.splice(i,1);
+      document.getElementById("score").textContent=score;
+    }
+  });
+
+  if(!hit) clickEffect(clickX,clickY,"gray");
+});
+
+function updateGame(){
+  drawItems();
+  if(Math.random()<0.05) createItem();
+  if(timeLeft<=0) endGame();
+}
+
+function startTimer(){
+  timerInterval=setInterval(()=>{
+    timeLeft--;
+    document.getElementById("time").textContent=timeLeft;
+
+    // aumenta dificultad cada 15s
+    if(timeLeft%15===0 && timeLeft>0){
+      level++;
+      speedMultiplier+=0.5;
+      playBeep(900,100,"sine");
+      document.body.style.background =
+        level%2===0
+          ? "linear-gradient(#ffa07a,#ffffff)"
+          : "linear-gradient(#87ceeb,#ffffff)";
+    }
+
+    if(timeLeft<=5 && timeLeft>0) playBeep(1000,80,"square");
+    if(timeLeft<=0) clearInterval(timerInterval);
+  },1000);
+}
+
+function endGame(){
+  clearInterval(gameInterval);
+  clearInterval(timerInterval);
+  gameOver=true;
+  music.pause();
+  document.getElementById("finalScore").textContent=score;
+  const best = Math.max(score, parseInt(localStorage.getItem("bestScore")||0));
+  localStorage.setItem("bestScore", best);
+  document.getElementById("bestScore").textContent = best;
+  document.getElementById("gameOver").style.display="block";
+  playBeep(1200,200,"triangle");
+  playBeep(900,200,"triangle");
+}
+
+function restartGame(){
+  score=0; timeLeft=60; items=[]; gameOver=false; level=1; speedMultiplier=1;
+  document.getElementById("score").textContent=0;
+  document.getElementById("time").textContent=60;
+  document.getElementById("gameOver").style.display="none";
+  document.body.style.background="linear-gradient(#87ceeb,#ffffff)";
+  startGame();
+}
+
+function startGame(){
+  gameInterval=setInterval(updateGame,30);
+  startTimer();
+  if(audioCtx.state==="suspended") audioCtx.resume();
+  music.play();
+}
+
+startGame();
+</script>
+</body>
+</html>
+
+
