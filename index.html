@@ -3,108 +3,57 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Caza-EPP | CREAMOSS S.O S.A.S</title>
-
-<!-- 🔥 FIREBASE -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyA9ef1Nxrly12ciCsjYo7E5ZgOlPC-USKU",
-    authDomain: "safe-game-71018.firebaseapp.com",
-    projectId: "safe-game-71018",
-    storageBucket: "safe-game-71018.appspot.com",
-    messagingSenderId: "433832606340",
-    appId: "1:433832606340:web:4aedd33c547e17db15a0d1"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  window.guardarPuntajeFirebase = async function(empresa, usuario, juego, puntaje, nivel, atrapados) {
-    try {
-      await addDoc(collection(db, "historial_puntajes"), {
-        empresa,
-        usuario,
-        juego,
-        puntaje,
-        nivel,
-        objetos_atrapados: atrapados,
-        fecha: serverTimestamp()
-      });
-      console.log("Puntaje guardado en Firebase");
-      
-      // Mensaje visual
-      const msg = document.createElement('div');
-      msg.textContent = "✅ Puntaje enviado a Firebase";
-      msg.style.position = "fixed";
-      msg.style.bottom = "12px";
-      msg.style.left = "12px";
-      msg.style.background = "#4CAF50";
-      msg.style.color = "#fff";
-      msg.style.padding = "8px 12px";
-      msg.style.borderRadius = "8px";
-      document.body.appendChild(msg);
-      setTimeout(()=>document.body.removeChild(msg), 3000);
-
-    } catch(e) {
-      console.error("Error guardando puntaje:", e);
-    }
-  }
-</script>
-
+<title>Caza-EPP — Versión Arcade</title>
 <style>
-:root{
-  --ui-bg: rgba(255,255,255,0.85);
-  --ui-radius: 12px;
-  --panel-pad: 12px;
-  --font: "Poppins", "Segoe UI", Roboto, Arial, sans-serif;
-}
-html,body{height:100%;margin:0;font-family:var(--font)}
-body{overflow:hidden;background: linear-gradient(#87CEEB,#ffffff);}
-#gameCanvas{display:block}
-#hud{
-  position:fixed; left:12px; top:12px;
-  background:var(--ui-bg); padding:var(--panel-pad);
-  border-radius:var(--ui-radius); box-shadow:0 6px 20px rgba(0,0,0,0.12);
-  z-index:30;
-}
-#hud .line{font-size:18px; margin:6px 0}
-#hud small{opacity:0.8; font-size:13px}
-#topRight{
-  position:fixed; right:12px; top:12px;
-  background:var(--ui-bg); padding:var(--panel-pad);
-  border-radius:var(--ui-radius); box-shadow:0 6px 20px rgba(0,0,0,0.12);
-  z-index:30; text-align:right;
-}
-#gameOver{
-  position:fixed; left:50%; top:50%; transform:translate(-50%,-50%);
-  background:var(--ui-bg); padding:18px; border-radius:18px;
-  box-shadow:0 10px 40px rgba(0,0,0,0.2); z-index:60; display:none; text-align:center;
-}
-button.primary{
-  background:#2b7cff; color:white; border:0; padding:10px 16px; border-radius:10px;
-  cursor:pointer; font-weight:600; font-size:16px;
-}
-button.ghost{
-  background:transparent; border:1px solid rgba(0,0,0,0.1); padding:8px 12px; border-radius:8px;
-  cursor:pointer;
-}
-#startOverlay{
-  position:fixed; left:0; top:0; right:0; bottom:0;
-  display:flex; align-items:center; justify-content:center;
-  z-index:70; backdrop-filter: blur(3px);
-}
-#startCard{
-  background:var(--ui-bg); padding:24px; border-radius:16px; text-align:center; box-shadow:0 10px 40px rgba(0,0,0,0.18);
-}
-#levelBadge{display:inline-block; margin-left:8px; padding:6px 10px; background:rgba(0,0,0,0.06); border-radius:10px;}
-.small{font-size:13px; color:#333; opacity:0.85}
+  :root{
+    --ui-bg: rgba(255,255,255,0.85);
+    --ui-radius: 12px;
+    --panel-pad: 12px;
+    --font: "Poppins", "Segoe UI", Roboto, Arial, sans-serif;
+  }
+  html,body{height:100%;margin:0;font-family:var(--font)}
+  body{overflow:hidden;background: linear-gradient(#87CEEB,#ffffff);}
+  #gameCanvas{display:block}
+  #hud{
+    position:fixed; left:12px; top:12px;
+    background:var(--ui-bg); padding:var(--panel-pad);
+    border-radius:var(--ui-radius); box-shadow:0 6px 20px rgba(0,0,0,0.12);
+    z-index:30;
+  }
+  #hud .line{font-size:18px; margin:6px 0}
+  #hud small{opacity:0.8; font-size:13px}
+  #topRight{
+    position:fixed; right:12px; top:12px;
+    background:var(--ui-bg); padding:var(--panel-pad);
+    border-radius:var(--ui-radius); box-shadow:0 6px 20px rgba(0,0,0,0.12);
+    z-index:30; text-align:right;
+  }
+  #gameOver{
+    position:fixed; left:50%; top:50%; transform:translate(-50%,-50%);
+    background:var(--ui-bg); padding:18px; border-radius:18px;
+    box-shadow:0 10px 40px rgba(0,0,0,0.2); z-index:60; display:none; text-align:center;
+  }
+  button.primary{
+    background:#2b7cff; color:white; border:0; padding:10px 16px; border-radius:10px;
+    cursor:pointer; font-weight:600; font-size:16px;
+  }
+  button.ghost{
+    background:transparent; border:1px solid rgba(0,0,0,0.1); padding:8px 12px; border-radius:8px;
+    cursor:pointer;
+  }
+  #startOverlay{
+    position:fixed; left:0; top:0; right:0; bottom:0;
+    display:flex; align-items:center; justify-content:center;
+    z-index:70; backdrop-filter: blur(3px);
+  }
+  #startCard{
+    background:var(--ui-bg); padding:24px; border-radius:16px; text-align:center; box-shadow:0 10px 40px rgba(0,0,0,0.18);
+  }
+  #levelBadge{display:inline-block; margin-left:8px; padding:6px 10px; background:rgba(0,0,0,0.06); border-radius:10px;}
+  .small{font-size:13px; color:#333; opacity:0.85}
 </style>
 </head>
 <body>
-
 <canvas id="gameCanvas"></canvas>
 
 <div id="hud">
@@ -134,7 +83,8 @@ button.ghost{
 <div id="startOverlay">
   <div id="startCard">
     <h1>Caza-EPP 🪖</h1>
-    <p class="small">CREAMOSS S.O S.A.S</p>
+<p class="small">CREAMOSS S.O S.A.S</p>
+
     <p class="small">Atrapa cascos, guantes, gafas, botas, arneses y slingas. Evita la basura ❌. Cada 15s sube el nivel.</p>
     <div style="margin-top:12px">
       <button id="startBtn" class="primary">JUGAR</button>
@@ -152,6 +102,7 @@ let H = canvas.height = window.innerHeight;
 
 window.addEventListener('resize', ()=>{ W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; });
 
+// Estado de juego
 let score = 0, timeLeft = 60, items = [], particles = [];
 let spawnRate = 0.05, baseSpeed = 2.2, caught = 0;
 let gameInterval = null, timerInterval = null, playing = false, level = 1;
@@ -159,16 +110,18 @@ let highScore = parseInt(localStorage.getItem('cazaEPP_high')||'0',10) || 0;
 let soundOn = true;
 document.getElementById('highScore').textContent = highScore;
 
+// EPP y basura (ahora con arnés y slinga)
 const EPP = [
   {emoji:'🪖', pts:12},
   {emoji:'🧤', pts:6},
   {emoji:'👓', pts:8},
   {emoji:'🥾', pts:9},
-  {emoji:'🦺', pts:10, rare:true},
-  {emoji:'🪢', pts:7, rare:true},
+  {emoji:'🦺', pts:10, rare:true}, // arnés
+  {emoji:'🪢', pts:7, rare:true},  // slinga
 ];
 const fake = {emoji:'❌', pts:-7};
 
+// Audio
 const AudioCtx = window.AudioContext || window.webkitAudioContext;
 let audioCtx = null, musicInterval = null, musicGain = null;
 
@@ -179,7 +132,7 @@ function initAudio(){
   musicGain.connect(audioCtx.destination);
 }
 
-function beep(freq=440,dur=120,type='sine',gain=0.12){
+function beep(freq=440,dur=120, type='sine', gain=0.12){
   if(!audioCtx) return;
   const o = audioCtx.createOscillator(), g = audioCtx.createGain();
   o.type=type; o.frequency.value=freq; g.gain.value=gain;
@@ -209,7 +162,7 @@ function soundError(){ beep(220,220,'sawtooth',0.12);}
 function soundCountdown(){ beep(1000,80,'sine',0.08);}
 function soundVictory(){ beep(1200,120,'square',0.14); setTimeout(()=>beep(900,120,'square',0.12),140); setTimeout(()=>beep(1600,140,'sine',0.12),300);}
 
-function spawnParticles(x,y,color='#fff'){
+function spawnParticles(x,y, color='#fff'){
   for(let i=0;i<12;i++){
     particles.push({
       x,y,
@@ -222,6 +175,7 @@ function spawnParticles(x,y,color='#fff'){
   }
 }
 
+// Crear item (incluye rareza)
 function createItem(){
   const isFake = Math.random() < 0.18;
   let pick, x=Math.random()*(W-40), sp=baseSpeed + Math.random()*2 + (level-1)*0.6;
@@ -234,6 +188,7 @@ function createItem(){
   }
 }
 
+// Fondo dinámico
 function drawBackground(){
   let g = ctx.createLinearGradient(0,0,0,H);
   if(level===1){ g.addColorStop(0,'#87CEEB'); g.addColorStop(1,'#ffffff');}
@@ -250,6 +205,7 @@ function drawBackground(){
   }
 }
 
+// Dibujar items y partículas
 function draw(){
   drawBackground();
   ctx.font="48px serif"; ctx.textAlign="left"; ctx.textBaseline="middle";
@@ -269,6 +225,7 @@ function draw(){
   ctx.globalAlpha=1;
 }
 
+// Click / touch
 canvas.addEventListener('click', (e)=>{
   if(!playing) return; if(audioCtx && audioCtx.state==='suspended') audioCtx.resume();
   const x=e.clientX, y=e.clientY;
@@ -284,6 +241,7 @@ canvas.addEventListener('click', (e)=>{
 });
 canvas.addEventListener('touchstart',(ev)=>{ const t=ev.touches[0]; canvas.dispatchEvent(new MouseEvent('click',{clientX:t.clientX,clientY:t.clientY}));});
 
+// HUD
 function updateHud(){
   document.getElementById('score').textContent=score;
   document.getElementById('time').textContent=timeLeft;
@@ -291,6 +249,7 @@ function updateHud(){
   document.getElementById('level').textContent=level;
 }
 
+// Game loop
 function gameTick(){
   if(Math.random() < spawnRate + (level-1)*0.01) createItem();
   if(Math.random() < 0.005 * level) createItem();
@@ -298,6 +257,7 @@ function gameTick(){
   if(timeLeft<=0) endGame();
 }
 
+// Timer y nivel
 function startTimer(){
   timerInterval=setInterval(()=>{
     timeLeft--;
@@ -309,6 +269,7 @@ function startTimer(){
   },1000);
 }
 
+// Inicio / fin / reinicio
 function startGame(){
   initAudio(); if(audioCtx.state==='suspended') audioCtx.resume();
   startMusic(); playing=true; score=0; timeLeft=60; items=[]; particles=[]; caught=0; spawnRate=0.05; baseSpeed=2.2; level=1;
@@ -317,22 +278,41 @@ function startGame(){
   document.getElementById('startOverlay').style.display='none';
   document.getElementById('gameOver').style.display='none';
 }
-
 function endGame(){
   playing=false; clearInterval(gameInterval); clearInterval(timerInterval); stopMusic(); soundVictory();
   document.getElementById('finalScore').textContent=score;
   if(score>highScore){ highScore=score; localStorage.setItem('cazaEPP_high',highScore); document.getElementById('highScore').textContent=highScore; document.getElementById('finalMsg').textContent='¡Nuevo récord! 🏆';}
   else document.getElementById('finalMsg').textContent='Sigue intentándolo para superar tu récord.';
-
   document.getElementById('gameOver').style.display='block';
-
-  // 🔥 Guardar puntaje en Firebase
-  const params = new URLSearchParams(window.location.search);
-  const empresa = params.get('empresa') || 'anonimo';
-  const usuario = params.get('user') || 'jugador';
-  guardarPuntajeFirebase(empresa, usuario, 'Caza-EPP', score, level, caught);
 }
-
 function restartGame(){ document.getElementById('startOverlay').style.display='flex'; document.getElementById('gameOver').style.display='none'; stopMusic(); if(audioCtx) audioCtx.suspend && audioCtx.suspend(); }
 
-document.getElementById('toggleSound').addEventListener('click', ()=>{ soundOn=!soundOn; document
+// Botones
+document.getElementById('toggleSound').addEventListener('click', ()=>{ soundOn=!soundOn; document.getElementById('toggleSound').textContent=soundOn?'🔊 Sonido':'🔈 Silencio'; if(!soundOn) stopMusic(); else startMusic();});
+document.getElementById('restartBtn').addEventListener('click', ()=>{ restartGame();});
+document.getElementById('startBtn').addEventListener('click', ()=>{ initAudio(); if(audioCtx.state==='suspended') audioCtx.resume(); startGame(); });
+document.getElementById('howBtn').addEventListener('click', ()=>{ alert('Haz clic/toca los EPP para atraparlos. Evita la basura ❌. Cada 15s sube el nivel y todo cae más rápido. ¡Consigue tu récord!'); });
+
+// Descargar puntaje
+function downloadScore(){
+  const data = `Caza-EPP — Puntaje: ${score}  Récord: ${highScore}  Fecha: ${new Date().toLocaleString()}`;
+  const blob = new Blob([data], {type:'text/plain'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='puntaje_cazaEPP.txt'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Render loop idle
+updateHud();
+(function renderLoop(){
+  if(!playing){
+    ctx.clearRect(0,0,W,H);
+    drawBackground();
+    ctx.font="60px serif";
+    ctx.fillText('🪖 🧤 👓 🥾 🦺 🪢',40,120);
+  }
+  requestAnimationFrame(renderLoop);
+})();
+</script>
+</body>
+</html>
