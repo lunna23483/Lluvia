@@ -20,12 +20,16 @@ body{overflow:hidden;background: linear-gradient(#87CEEB,#ffffff);}
   background:var(--ui-bg); padding:var(--panel-pad);
   border-radius:var(--ui-radius);
 }
+#topRight{
+  position:fixed; right:12px; top:12px;
+  background:var(--ui-bg); padding:var(--panel-pad);
+  border-radius:var(--ui-radius);
+}
 #gameOver{
   position:fixed; left:50%; top:50%; transform:translate(-50%,-50%);
   background:var(--ui-bg); padding:18px; border-radius:18px;
   display:none; text-align:center;
 }
-button{padding:10px;border-radius:10px;border:none;cursor:pointer;}
 </style>
 
 </head>
@@ -34,14 +38,18 @@ button{padding:10px;border-radius:10px;border:none;cursor:pointer;}
 <canvas id="gameCanvas"></canvas>
 
 <div id="hud">
-🧢 Puntos: <span id="score">0</span><br>
-⏱️ Tiempo: <span id="time">60</span>
+🧢 Puntos: <strong id="score">0</strong><br>
+⏱️ Tiempo: <strong id="time">60</strong>
+</div>
+
+<div id="topRight">
+<button onclick="restartGame()">🔁 Reiniciar</button>
 </div>
 
 <div id="gameOver">
-<h2>Fin del juego</h2>
-<p>Puntaje: <span id="finalScore"></span></p>
-<button onclick="restartGame()">Reiniciar</button>
+<h2>🎉 Fin del juego</h2>
+<p>Puntaje final: <strong id="finalScore">0</strong></p>
+<button onclick="restartGame()">Jugar otra vez</button>
 </div>
 
 <!-- 🔥 FIREBASE -->
@@ -62,13 +70,12 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// 🔥 DATOS DEL CONTENEDOR
+// 🔥 PARAMETROS
 const params = new URLSearchParams(window.location.search);
 const empresa = params.get("empresa") || "demo";
 const userId = params.get("user") || "anonimo";
 const juego = "cazaepp";
 
-// 🔥 GUARDAR
 async function guardarPuntaje(puntos){
 
   const ref = doc(db,
@@ -103,7 +110,7 @@ window.guardarPuntaje = guardarPuntaje;
 
 </script>
 
-<!-- 🎮 TU JUEGO -->
+<!-- 🎮 JUEGO ORIGINAL -->
 <script>
 
 const canvas = document.getElementById('gameCanvas');
@@ -144,8 +151,7 @@ function timer(){
 
 function endGame(){
 
-  // 🔥 GUARDA EN FIREBASE
-  guardarPuntaje(score);
+  guardarPuntaje(score); // 🔥 FIREBASE
 
   playing=false;
   document.getElementById('finalScore').innerText = score;
@@ -157,11 +163,10 @@ function restartGame(){
   startGame();
 }
 
-// INICIO
+// iniciar
 startGame();
 
 </script>
 
 </body>
 </html>
-
